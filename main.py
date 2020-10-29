@@ -40,7 +40,6 @@ else:
     vs = cv2.VideoCapture(args["video"])
 
 fps = None
-count = 0
 while True:
     frame = vs.read()
     frame = frame[1] if args.get("video", False) else frame
@@ -56,7 +55,7 @@ while True:
             x, y, w, h = [int(v) for v in box]
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
             roi = cv2.cvtColor(frame[y + 1:(y + h) - 1, x + 1:(x + w) - 1], cv2.COLOR_BGR2GRAY)
-            cv2.imwrite(args["target"] + "/{}.jpg".format(count), roi)
+            cv2.imwrite(args["target"] + "/{}.jpg".format(time.time()), roi)
 
         fps.update()
         fps.stop()
@@ -70,14 +69,13 @@ while True:
         for (i, (key, value)) in enumerate(info):
             text = "{}: {}".format(key, value)
             cv2.putText(frame, text, (10, H - ((i * 20) + 20)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-        # roi = frame[x:x + w, y:y + h]
-        count += 1
 
     cv2.imshow("Tracking", frame)
     key = cv2.waitKey(1) & 0xFF
 
     if key == ord("s"):
-        initBB = cv2.selectROI("Selection", frame, fromCenter=False, showCrosshair=True)
+        initBB = cv2.selectROI("Tracking", frame, fromCenter=False, showCrosshair=True)
+        tracker = OPENCV_OBJECT_TRACKERS[args["option"]]()
         tracker.init(frame, initBB)
         fps = FPS().start()
 
